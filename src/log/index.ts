@@ -24,7 +24,7 @@ export const log = {
     },
     error: msg => {
         if(level <= LogLevel.Error) {
-            console.log(colors.red(`ERROR: ${msg}`));
+            console.error(colors.red(`ERROR: ${msg}`));
         }
     },
 };

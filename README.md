@@ -11,8 +11,7 @@ Combination of various node tools used for quick prototyping
 ```
 import { pg } from 'k-node-tools';
 
-pg.initDB({
-    name: 'name1',
+pg.initDB('name1', {
     host: '',
     database: '',
     user: '',

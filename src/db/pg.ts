@@ -1,12 +1,10 @@
 import { log } from './../log';
 import * as PG from 'pg';
-const Pool = PG.Pool;
 
 const pools = {};
 const poolsPromisfied = {};
 
 export interface PgInitDBParams {
- name: string;
  database: string;
  host?: string;
  user?: string;
@@ -18,39 +16,42 @@ export interface PgInitDBParams {
 }
 
 export const pg = {
-    initDB: (initParams: PgInitDBParams) => {
-        if(pools[initParams.name] !== undefined) {
-            log.error(`Database has already been created. Name: ${initParams.name}`);
+    initDB: (connectionName: string, dbParams: PgInitDBParams) => {
+        if(pools[connectionName] !== undefined) {
+            log.debug(`Database has already been created. Name: ${connectionName}`);
+            return;
         }
 
-        let config = { ...{ host: 'localhost', user: 'root', password: ''}, ...initParams };
-        log.info(`Init postgres database pool: ${initParams.name}`);
-        let pool = new Pool(config);
-
+        let config = { ...{ host: 'localhost', user: 'root', password: ''}, ...dbParams };
+        log.info(`Init postgres database pool: ${connectionName}`);
+        let pool = new PG.Pool(config);
         let poolPromisfied = dbWrapper(pool);
+
         pool.on('error', (err) => {
-            log.error(`Idle pg client error. Name: ${initParams.name}. Message:${err.message}. Stack:${err.stack}`);
+            log.error(`Idle pg client error. Name: ${connectionName}. Message:${err.message}. Stack:${err.stack}`);
         });
-        pools[initParams.name] = pool;
-        poolsPromisfied[initParams.name] = poolPromisfied;
+        pools[connectionName] = pool;
+        poolsPromisfied[connectionName] = poolPromisfied;
     },
-    endDB: (name: string) => {
-        if(pools[name] === undefined) {
-            throw new Error(`Unable to find pg database ${name}. You may need to init the database connection first`);
+    endDB: (connectionName: string) => {
+        if(pools[connectionName] === undefined) {
+            throw new Error(`Unable to find pg database ${connectionName}. You may need to init the database connection first`);
         }
-        pools[name].end();
+        pools[connectionName].end();
     },
-    getDB: (name: string) => {
-        if(pools[name] === undefined) {
-            throw new Error(`Unable to find pg database ${name}. You may need to init the database connection first`);
+    getDB: (connectionName: string) => {
+        if(pools[connectionName] === undefined) {
+            throw new Error(`Unable to find pg database ${connectionName}. You may need to init the database connection first`);
         }
-        return pools[name];
+        return pools[connectionName];
     }
 };
 
 function dbWrapper(pool) {
     return {
         /**
+         * Usage example:
+         *
          * let res = await db.query(`select * from table1 where id = $1`, [1]);
          */
         query: (query, parameters) => {
@@ -59,15 +60,16 @@ function dbWrapper(pool) {
             return new Promise((resolve, reject) => {
                 pool.query(query, parameters, (err, res) => {
                     if(err){
-                        log.error(`*********************`);
-                        log.error(`FAILED SQL QUERY:`);
-                        log.error(query);
-                        log.error(`PARAMETERS`);
-                        log.error(parameters);
-                        log.error(`ERROR`);
-                        log.error(err);
-                        log.error(`ERROR - stringify: ${JSON.stringify(err)}`);
-                        log.error(`*********************`);
+                        log.error(`
+*********************
+FAILED SQL QUERY:
+${query}
+PARAMETERS:
+${parameters}
+ERROR:
+${JSON.stringify(err)}
+*********************
+`);
                         reject(err);
                     } else{
                         resolve(res);
