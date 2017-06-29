@@ -1,8 +1,7 @@
 import { log } from './../log';
 import * as PG from 'pg';
 
-const pools = {};
-const poolsPromisfied = {};
+const poolsWrapped = {};
 
 export interface PgInitDBParams {
  database: string;
@@ -12,12 +11,11 @@ export interface PgInitDBParams {
  port?: number;
  max?: number;
  idleTimeoutMillis?: number;
-
 }
 
 export const pg = {
     initDB: (connectionName: string, dbParams: PgInitDBParams) => {
-        if(pools[connectionName] !== undefined) {
+        if(poolsWrapped[connectionName] !== undefined) {
             log.debug(`Database has already been created. Name: ${connectionName}`);
             return;
         }
@@ -30,14 +28,13 @@ export const pg = {
         pool.on('error', (err) => {
             log.error(`Idle pg client error. Name: ${connectionName}. Message:${err.message}. Stack:${err.stack}`);
         });
-        pools[connectionName] = pool;
-        poolsPromisfied[connectionName] = poolPromisfied;
+        poolsWrapped[connectionName] = poolPromisfied;
     },
     getDB: (connectionName: string) => {
-        if(pools[connectionName] === undefined) {
+        if(poolsWrapped[connectionName] === undefined) {
             throw new Error(`Unable to find pg database ${connectionName}. You may need to init the database connection first`);
         }
-        return pools[connectionName];
+        return poolsWrapped[connectionName];
     }
 };
 
@@ -73,7 +70,7 @@ ${JSON.stringify(err)}
         },
         disconnect: () => {
             pool.end();
-            delete pools[connectionName];
+            delete poolsWrapped[connectionName];
         }
     }
 }
