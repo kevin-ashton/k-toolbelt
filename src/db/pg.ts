@@ -25,19 +25,13 @@ export const pg = {
         let config = { ...{ host: 'localhost', user: 'root', password: ''}, ...dbParams };
         log.info(`Init postgres database pool: ${connectionName}`);
         let pool = new PG.Pool(config);
-        let poolPromisfied = dbWrapper(pool);
+        let poolPromisfied = dbWrapper(pool, connectionName);
 
         pool.on('error', (err) => {
             log.error(`Idle pg client error. Name: ${connectionName}. Message:${err.message}. Stack:${err.stack}`);
         });
         pools[connectionName] = pool;
         poolsPromisfied[connectionName] = poolPromisfied;
-    },
-    endDB: (connectionName: string) => {
-        if(pools[connectionName] === undefined) {
-            throw new Error(`Unable to find pg database ${connectionName}. You may need to init the database connection first`);
-        }
-        pools[connectionName].end();
     },
     getDB: (connectionName: string) => {
         if(pools[connectionName] === undefined) {
@@ -47,7 +41,7 @@ export const pg = {
     }
 };
 
-function dbWrapper(pool) {
+function dbWrapper(pool, connectionName) {
     return {
         /**
          * Usage example:
@@ -76,6 +70,10 @@ ${JSON.stringify(err)}
                     }
                 });
             });
+        },
+        disconnect: () => {
+            pool.end();
+            delete pools[connectionName];
         }
     }
 }
