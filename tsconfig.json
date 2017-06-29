@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "lib": ["ES2015"],
+    "declaration": true,
+    "target": "es6",
+    "module": "commonjs",
+    "sourceMap": true,
+    "types": [
+      "node",
+      "colors",
+      "pg"
+    ]
+  },
+  "files": [
+    "src/main.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

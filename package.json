@@ -1,0 +1,33 @@
+{
+  "name": "k-toolbelt",
+  "version": "1.0.0",
+  "description": "Combination of various node tools used for quick prototyping",
+  "main": "src/main.js",
+  "types": "src/main.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kevin-ashton/k-toolbelt.git"
+  },
+  "keywords": [
+    "logging",
+    "postgres",
+    "prototyping"
+  ],
+  "author": "Kevin M Ashton",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kevin-ashton/k-toolbelt/issues"
+  },
+  "homepage": "https://github.com/kevin-ashton/k-toolbelt#readme",
+  "dependencies": {
+    "@types/colors": "^1.1.3",
+    "@types/node": "^8.0.2",
+    "@types/pg": "^6.1.41",
+    "colors": "^1.1.2",
+    "pg": "^6.4.0",
+    "typescript": "^2.3.4"
+  }
+}
