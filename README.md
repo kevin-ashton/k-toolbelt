@@ -8,7 +8,7 @@ Combination of various node tools used for quick prototyping
 
 ## Postgres
 ```typescript
-import { pg } from 'k-node-tools';
+import { pg } from 'k-toolbelt';
 
 pg.initDB('name1', {
     host: '',

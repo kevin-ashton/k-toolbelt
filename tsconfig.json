@@ -5,11 +5,7 @@
     "target": "es6",
     "module": "commonjs",
     "sourceMap": true,
-    "types": [
-      "node",
-      "colors",
-      "pg"
-    ]
+    "outDir": "dist"
   },
   "files": [
     "src/main.ts"
