@@ -1,6 +1,6 @@
 {
   "name": "k-toolbelt",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "Combination of various node tools used for quick prototyping",
   "main": "dist/main.js",
   "types": "dist/main.d.ts",
@@ -17,6 +17,7 @@
   "keywords": [
     "logging",
     "postgres",
+    "mysql",
     "prototyping"
   ],
   "author": "Kevin M Ashton",
@@ -27,6 +28,7 @@
   "homepage": "https://github.com/kevin-ashton/k-toolbelt#readme",
   "dependencies": {
     "colors": "^1.1.2",
+    "mysql": "^2.15.0",
     "pg": "^7.4.0"
   },
   "devDependencies": {

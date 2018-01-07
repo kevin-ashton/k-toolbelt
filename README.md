@@ -18,8 +18,26 @@ pg.initDB('name1', {
 });
 
 let db = pg.getDB('name1');
-let res = await pg.query(`select * from foo where id = $1`, [5]);
-res.rows.forEach(r => console.log(r.id);)
+let res = await db.query(`select * from foo where id = $1`, [5]);
+res.forEach(r => console.log(r.id);)
+db.disconnect();
+
+```
+
+## MySQL
+```typescript
+import { mysql } from 'k-toolbelt';
+
+mysql.initDB('name1', {
+    host: '',
+    database: '',
+    user: '',
+    password: ''
+});
+
+let db = mysql.getDB('name1');
+let res = await db.query(`select * from foo where id = ?`, [5]);
+res.forEach(r => console.log(r.id);)
 db.disconnect();
 
 ```

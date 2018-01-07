@@ -8,7 +8,9 @@
     "outDir": "dist"
   },
   "files": [
-    "src/main.ts"
+    "src/main.ts",
+    "src/example/mysql-example.ts",
+    "src/example/postgres-example.ts"
   ],
   "exclude": [
     "node_modules"

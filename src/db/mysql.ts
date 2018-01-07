@@ -1,20 +1,18 @@
 import { log } from './../log';
-import * as PG from 'pg';
+import * as colors from 'colors/safe';
+import * as mysqlLib from 'mysql';
 
 const poolsWrapped = {};
 
-export interface PgInitDBParams {
+export interface MysqlInitDBParams {
   database: string;
   host?: string;
   user?: string;
   password?: string;
-  port?: number;
-  max?: number;
-  idleTimeoutMillis?: number;
 }
 
-export const pg = {
-  initDB: (connectionName: string, dbParams: PgInitDBParams) => {
+export const mysql = {
+  initDB: (connectionName: string, dbParams: MysqlInitDBParams) => {
     if (poolsWrapped[connectionName] !== undefined) {
       log.debug(`Database has already been created. Name: ${connectionName}`);
       return;
@@ -22,24 +20,22 @@ export const pg = {
 
     let defaults = {
       host: 'localhost',
-      user: 'postgres',
+      user: 'root',
       password: '',
+      connectionLimit: 10,
     };
 
     let config = { ...defaults, ...dbParams };
-    log.info(`Init postgres database pool: ${connectionName}`);
-    let pool = new PG.Pool(config);
+    log.info(`Init mysql database connection: ${connectionName}`);
+    let pool = mysqlLib.createPool(config);
     let poolPromisfied = dbWrapper(pool, connectionName);
 
-    pool.on('error', (err) => {
-      log.error(`Idle pg client error. Name: ${connectionName}. Message:${err.message}. Stack:${err.stack}`);
-    });
     poolsWrapped[connectionName] = poolPromisfied;
   },
   getDB: (connectionName: string) => {
     if (poolsWrapped[connectionName] === undefined) {
       throw new Error(
-        `Unable to find pg database ${connectionName}. You may need to init the database connection first`,
+        `Unable to find mysql database ${connectionName}. You may need to init the database connection first`,
       );
     }
     return poolsWrapped[connectionName];
@@ -51,28 +47,38 @@ function dbWrapper(pool, connectionName) {
     /**
      * Usage example:
      *
-     * let res = await db.query(`select * from table1 where id = $1`, [1]);
+     * let res = await db.query(`select * from table1 where id = ?`, [1]);
      */
     query: (query, parameters = []) => {
       log.debug(query);
       log.debug(parameters);
       return new Promise((resolve, reject) => {
-        pool.query(query, parameters, (err, res) => {
+        pool.getConnection(function(err, connection) {
           if (err) {
-            log.error(`
+            log.error('Trouble obtaining mysql connection from pool');
+            log.error(`${err}`);
+            reject(err);
+          }
+
+          connection.query(query, parameters, (error, results) => {
+            connection.release();
+
+            resolve(results);
+
+            if (err) {
+              log.error(`
 *********************
 FAILED SQL QUERY:
 ${query}
 PARAMETERS:
 ${parameters}
 ERROR:
-${JSON.stringify(err)}
+${JSON.stringify(error)}
 *********************
 `);
-            reject(err);
-          } else {
-            resolve(res.rows);
-          }
+              reject(error);
+            }
+          });
         });
       });
     },
