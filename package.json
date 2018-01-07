@@ -1,6 +1,6 @@
 {
   "name": "k-toolbelt",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Combination of various node tools used for quick prototyping",
   "main": "dist/main.js",
   "types": "dist/main.d.ts",
