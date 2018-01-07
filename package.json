@@ -1,14 +1,13 @@
 {
   "name": "k-toolbelt",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "Combination of various node tools used for quick prototyping",
   "main": "dist/main.js",
   "types": "dist/main.d.ts",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "prettier": "prettier --write \"src/**/*.ts\"",
-    "publish": "npm run build && npm publish"
+    "prettier": "prettier --write \"src/**/*.ts\""
   },
   "repository": {
     "type": "git",
