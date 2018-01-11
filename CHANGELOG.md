@@ -4,6 +4,11 @@ For richer information consult the commit log on github with referenced pull req
 
 We do not include break-fix version release in this file.
 
+4.0.0
+
+* Added a check to database connections when they init
+* Better error handling 
+
 3.0.0
 
 * Add mysql support

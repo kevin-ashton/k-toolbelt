@@ -15,28 +15,40 @@ export interface PgInitDBParams {
 
 export const pg = {
   initDB: (connectionName: string, dbParams: PgInitDBParams) => {
-    if (poolsWrapped[connectionName] !== undefined) {
-      log.debug(`Database has already been created. Name: ${connectionName}`);
-      return;
-    }
+    return new Promise(async (resolve, reject) => {
+      if (poolsWrapped[connectionName] !== undefined) {
+        log.debug(`Database has already been created. Name: ${connectionName}`);
+        resolve();
+      }
 
-    let defaults = {
-      host: 'localhost',
-      user: 'postgres',
-      password: '',
-    };
+      let defaults = {
+        host: 'localhost',
+        user: 'postgres',
+        password: '',
+      };
 
-    let config = { ...defaults, ...dbParams };
-    log.info(`Init postgres database pool: ${connectionName}`);
-    let pool = new PG.Pool(config);
-    let poolPromisfied = dbWrapper(pool, connectionName);
+      let config = { ...defaults, ...dbParams };
+      log.info(`Init postgres database pool: ${connectionName}`);
+      let pool = new PG.Pool(config);
+      let poolPromisfied = dbWrapper(pool, connectionName);
 
-    pool.on('error', (err) => {
-      log.error(`Idle pg client error. Name: ${connectionName}. Message:${err.message}. Stack:${err.stack}`);
+      pool.on('error', (err) => {
+        log.error(`Idle pg client error. Name: ${connectionName}. Message:${err.message}. Stack:${err.stack}`);
+        reject(err);
+      });
+      poolsWrapped[connectionName] = poolPromisfied;
+
+      try {
+        log.info('Testing connection');
+        let res = await poolsWrapped[connectionName].query(`select 'hello world' as hello_world`, []);
+        log.debug(res);
+        resolve();
+      } catch (e) {
+        reject(e);
+      }
     });
-    poolsWrapped[connectionName] = poolPromisfied;
   },
-  getDB: (connectionName: string) => {
+  getDB: (connectionName: string): PgWrappedDb => {
     if (poolsWrapped[connectionName] === undefined) {
       throw new Error(
         `Unable to find pg database ${connectionName}. You may need to init the database connection first`,
@@ -46,14 +58,19 @@ export const pg = {
   },
 };
 
-function dbWrapper(pool, connectionName) {
+export interface PgWrappedDb {
+  query: (query: string, parameters?: any[]) => Promise<any[]>;
+  disconnect: () => void;
+}
+
+function dbWrapper(pool, connectionName): PgWrappedDb {
   return {
     /**
      * Usage example:
      *
      * let res = await db.query(`select * from table1 where id = $1`, [1]);
      */
-    query: (query, parameters = []) => {
+    query: (query, parameters = []): Promise<any[]> => {
       log.debug(query);
       log.debug(parameters);
       return new Promise((resolve, reject) => {
